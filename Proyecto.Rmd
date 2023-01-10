@@ -1,0 +1,69 @@
+---
+title: "Modelo matemático del consumo de la marihuana durante la trayectoria universitaria."
+author: " J. Raúl Martínez Vega, Sara s.Robles Ortiz, Cecilia Q. Salinas Mora "
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output: 
+  html_document:
+    toc: true
+    number_sections: true
+    toc_float: true
+    fig_height: 6
+    fig_width: 5
+  pdf_document:
+    fig_height: 3
+    fig_width: 5
+  word_document:
+    fig_height: 3
+    fig_width: 5
+---
+*1. Título :*  "Modelo matemático del consumo de la marihuana durante la trayectoria universitaria."
+*2. Descripción general del problema que quieren abordar.*
+El consumo de marihuana ha incrementado a lo largo de los años por diversas razones. En los jóvenes que pertenecen a la etapa universitaria el consumo de drogas y especialmente de la marihuana ha ido en aumento desde hace unos años.Desde 1975, se tiene un reporte acerca del uso y abuso de drogas en jóvenes de 19-22 años que es elaborado por el Instituto Nacional de Abuso de drogas. En 2020 se reporta que 44% de los jóvenes universitarios consume marihuana, un incremento aproximado del 6% desde el 2015. 
+
+
+*3. Modelo(s) matemático(s) con los que abordarán el problema.* 
+![Modelo marihuana](Imagenes/Modelo compartimentos.png){width=1000 height=1000}
+
+## Cargar las librerias requeridas: 
+```{r}
+library(deSolve)
+library(ggplot)
+```
+# Conjunto de ecuaciones que describen el sistema 
+4. Código y/0 ecuaciones (Aunque sea parcial)
+
+Las ecuaciones que describen al sistema son: 
+$$\dot S(t)=\nu -\beta_1SP- \beta_2SA- \mu S - \sigma S$$
+$$\dot P(t)= \rho P +\beta_1SP - \gamma_1 P - \epsilon P + \theta A - \alpha_1 P - \mu P $$
+$$\dot A(t)=\rho  A + \beta_2  SA + \epsilon P - \theta A - \gamma_2 - \alpha_2A - \mu  A$$
+$$\dot C (t)= \gamma_1P + \gamma_2 A - \mu C - \alpha_3C$$
+$$\dot R(t)=\alpha_1 P + \alpha_2 A - \mu C + \alpha_3C + \sigma S$$
+---
+
+```{r}
+SPACR<- function(Time, State, Pars) { 
+  with(as.list(c(State, Pars)), {
+    dS<- nu - beta1 *S* P - beta2 *S*A - mu * S - sigma * S
+    dP<- rho * P + beta1*S* P - gamma1 * P - epsilon *P + theta *A  - alpha1 * P - mu * P / (S + P + A +C +R )
+    dA<- rho * A + beta2 * S*A + epsilon*P - theta* A - gamma2 - alpha2*A - mu * A /(S + P + A +C +R )
+    dC<-gamma1*P + gamma2*A - mu *C - alpha3*C
+    dR<- alpha1*P + alpha2*A - mu*C + alpha3*C
+    return(list(c(dS, dP,dA, dC, dR)))
+  })
+}
+#esto es para definir cuanto valen parámetros, en que condiciones va a iniciar, y el tiempo que durará y para finalmente correrlo 
+#Aún no se ponen las condiciones finales# 
+pars <- c(beta1= 3, beta2=, alpha1= 5,alpha2=, alpha3=,  gamma1 = 4.5,gamma2=,rho=, sigma=, mu= 3/200, nu= .1, epsilon= .4, theta=3) #TODAVÍA NO SE DEFINE POR COMPLETO LOS PARÁMETROS 
+condiciones_iniciales <- c(S =11995,P=333, A=100,C= 130, R=70)
+tiempo <- seq(0, 20, by = 0.001)
+out <-ode(condiciones_iniciales, tiempo, SPACR, pars)
+#esto no se uede observar a menos que se grafique 
+matplot(out[ , 1], out[ , 2:4], type = "l", xlab = "tiempo", ylab = "Poblacion",
+        main = "SPACR", lwd = 2)
+legend("topright", c("Susceptible","Fuma", "Alimento","Cronico","Recuperado"), col = 1:3,lty=1:3,cex=0.5)#Saber qué cosa es cada uno. 
+```
+
+*Qué contribuyó cada uno*
+Raúl Martínez: Modelo de ecuaciones diferenciales y búsqueda de información 
+Sara Robles:  Script en R Markdown y generación de imágenes y búsqueda de información  
+Cecilia Salinas: Idea general y planteamiento del modelo por compartimentos  y búsqueda de información. 
